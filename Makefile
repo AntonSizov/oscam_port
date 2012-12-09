@@ -3,14 +3,12 @@ OSCAM-REP=oscam-light
 OSCAM-BIN=$(OSCAM-REP)/Distribution/oscam-1.20-unstable_svn0-x86_64-linux-gnu
 OSCAM-PRIV="./priv/oscam"
 
-all: test
+all: compile
 
-generate: compile
-	@rm -rf ./rel/$(NAME)
-	@./rebar generate
-
-compile: get-deps $(OSCAM-PRIV)
+compile: oscam get-deps
 	@./rebar compile
+
+oscam: $(OSCAM-PRIV)
 
 $(OSCAM-PRIV): $(OSCAM-BIN) priv
 	@cp $(OSCAM-BIN) $(OSCAM-PRIV)
@@ -32,9 +30,6 @@ rebuild-c-port:
 
 get-deps:
 	@./rebar get-deps
-
-console:
-	@./rel/$(NAME)/bin/$(NAME) console
 
 clean:
 	@./rebar clean
