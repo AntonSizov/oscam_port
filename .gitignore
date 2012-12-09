@@ -1,0 +1,9 @@
+*.eunit
+oscam_port.plt
+ebin
+deps
+erl_crash.dump
+oscam-light
+oscam
+priv/
+rel/
