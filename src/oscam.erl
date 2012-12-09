@@ -46,13 +46,11 @@ test() ->
 
 init([]) ->
 	PrivDir = code:priv_dir(oscam_port),
-	io:format("PrivDir: ~p~n", [PrivDir]),
 	Name = filename:absname("oscam", PrivDir),
-	io:format("Name: ~p~n", [Name]),
     Port = open_port({spawn, Name}, [{packet, 2}]),
     {ok, #st{port = Port}}.
 
-handle_call({req, F, Args}, From, St = #st{port = Port}) ->
+handle_call({req, F, Args}, _From, St = #st{port = Port}) ->
 	Port ! {self(), {command, pack_buff(F, Args)}},
 	receive
 		{Port, {data, Data}} ->

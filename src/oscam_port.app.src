@@ -1,7 +1,7 @@
 {application, oscam_port,
  [
-  {description, ""},
-  {vsn, "1"},
+  {description, "Oscam port for erlang. Mostly in order to use crypto."},
+  {vsn, "0.0.1"},
   {registered, []},
   {applications, [
                   kernel,
