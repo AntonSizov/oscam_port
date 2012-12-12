@@ -2,86 +2,88 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include "cscrypt/des.h"
-
-#define bool unsigned int
-#define true (1)
-#define false (0)
-#define ERL_MSG_HEADER_SIZE ((size_t)2)
-#define ERL_MSG_MAX_SIZE ((size_t)65536)
-#define byte_t unsigned char
+#include "cscrypt/cscrypt.h"
 
 #define IDX_DES_LOGIN_KEY_GET 1
+#define MD5_CRYPT 2
+#define DES_ENCRYPT 3 //des_encrypt(netbuf, len, deskey))
+#define DES_DECRYPT 4
 
-int write_exact(byte_t* buff, int len) {
-    int i; int wrote =  0 ;
-    do {
-        if ( (i = write(1/*STDOUT*/, buff + wrote, len - wrote)) <=  0  ) {
-            return i;
-        }
-        wrote += i;
-    } while (wrote < len);
-    return len;
+typedef unsigned char byte;
+
+int read_exact(byte *buf, int len)
+{
+  int i, got=0;
+
+  do {
+    if ((i = read(0, buf+got, len-got)) <= 0)
+      return(i);
+    got += i;
+  } while (got<len);
+
+  return(len);
 }
 
-int write_cmd(byte_t* buff, int len) {
-    byte_t li;
-    li = (len >> 8) & 0xff;
-    write_exact(&li, 1);
-    li = len & 0xff;
-    write_exact(&li, 1);
-    return write_exact(buff, len);
+int read_cmd(byte *buf)
+{
+  int len;
+
+  if (read_exact(buf, 2) != 2)
+    return(-1);
+  len = (buf[0] << 8) | buf[1];
+  return read_exact(buf, len);
 }
 
-static void process(byte_t *payload, int length) {
-    int fun_idx;
-    fun_idx = payload[0];
+int write_exact(byte *buf, int len)
+{
+  int i, wrote = 0;
 
-	if(fun_idx == IDX_DES_LOGIN_KEY_GET) {
-	    byte_t key[16];
-	    des_login_key_get(&payload[1], &payload[15], 14, key);
-		write_cmd(key, 16);
+  do {
+    if ((i = write(1, buf+wrote, len-wrote)) <= 0)
+      return (i);
+    wrote += i;
+  } while (wrote<len);
+
+  return (len);
+}
+
+int write_cmd(byte *buf, int len)
+{
+  byte li;
+
+  li = (len >> 8) & 0xff;
+  write_exact(&li, 1);
+
+  li = len & 0xff;
+  write_exact(&li, 1);
+
+  return write_exact(buf, len);
+}
+
+int main(void) {
+  int fn, len;
+  byte buf[65536];
+
+  while ((len = read_cmd(buf)) > 0) {
+    fn = buf[0];
+
+    if (fn == IDX_DES_LOGIN_KEY_GET) {
+      byte key[16];
+
+      des_login_key_get(&buf[1], &buf[15], 14, key);
+	  write_cmd(key, 16);
+
+    } else if (fn == MD5_CRYPT) {
+	  byte passwdcrypt[120];
+
+      __md5_crypt((char *)&buf[1], "$1$abcdefgh$", (char *)passwdcrypt);
+	  write_cmd(passwdcrypt, strlen((char *)passwdcrypt));
+
+    } else if (fn == DES_ENCRYPT) {
+	  // des encrypt
+	  /* int des_encrypt(unsigned char *buffer, int len, unsigned char *deskey) */
+	  /* des_encrypt(netbuf, len, deskey) */
 	}
-}
-
-
-static size_t packet_size(byte_t buff[ERL_MSG_HEADER_SIZE]) {
-    int len;
-	len = (buff[0] << 8) | buff[1];
-	return len;
-}
-
-int main(int argc, char** argv) {
-	bool bShutdown = false;
-	fprintf(stderr, "Entering the loop\n");
-	while (! bShutdown) {
-		fprintf(stderr, "Loop begin\n");
-		byte_t packet_size_buff[ERL_MSG_HEADER_SIZE];
-		byte_t packet_payload[ERL_MSG_MAX_SIZE];
-		ssize_t bytes_read = 0;
-		bytes_read = read(fileno(stdin), (void*) packet_size_buff, ERL_MSG_HEADER_SIZE);
-		fprintf(stderr, "Bytes read: %d\n", bytes_read);
-
-		if ( bytes_read > 0 ) {
-			size_t bytes_to_read = packet_size(packet_size_buff);
-			fprintf(stderr, "Packet size: %d\n", bytes_to_read);
-
-			bytes_read = read(fileno(stdin), (void*) packet_payload, bytes_to_read);
-			if ( bytes_read != bytes_to_read ) {
-				fprintf(stderr, "wrong bytes_read %d. Expected: %d\n. Errno: %s\n", bytes_read, bytes_to_read, strerror(errno));
-				bShutdown = true;
-			}
-			else {
-			  process(packet_payload, bytes_to_read);
-			}
-		}
-		else {
-			fprintf(stderr, "Error: %s\n", strerror(errno));
-			bShutdown = true;
-		}
-		fprintf(stderr, "Loop end\n");
-	}
-	fprintf(stderr, "Left the loop\n");
-
-	return 0;
+  }
+  return 0;
 }

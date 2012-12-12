@@ -25,7 +25,5 @@ start_link() ->
 
 init([]) ->
     {ok, { {one_for_one, 5, 10}, [
-		{oscam, {oscam ,start_link, []}, permanent, 5000, worker, [oscam]}
-		%% ?CHILD(oscam, worker)
+		?CHILD(oscam, worker)
 	]} }.
-

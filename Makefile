@@ -34,8 +34,11 @@ get-deps:
 clean:
 	@./rebar clean
 
-test: compile
+dev-test: compile
 	@erl -env ERL_LIBS "../" -pa ebin/ \
 		-eval 'application:start($(NAME))' \
 		-eval 'oscam:test()' \
 		-s init stop
+
+test: compile rebuild-c-port
+	./rebar skip_deps=true eunit
