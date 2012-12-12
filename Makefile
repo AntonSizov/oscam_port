@@ -25,7 +25,7 @@ $(OSCAM-REP):
 	@git clone https://github.com/AntonSizov/$(OSCAM-REP).git
 
 rebuild-c-port:
-	@cp ./priv/oscam-port.c ./$(OSCAM-REP)/
+	@cp ./etc/oscam-port.c ./$(OSCAM-REP)/
 	@make -C $(OSCAM-REP) Distribution/oscam-1.20-unstable_svn0-x86_64-linux-gnu
 
 get-deps:
