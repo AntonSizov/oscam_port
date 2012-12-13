@@ -10,7 +10,8 @@ all_test_() ->
 		{setup,
 		fun setup/0,
 			[fun test_des_login_key_get/0,
-			fun test_md5_crypt/0]}}.
+			fun test_md5_crypt/0,
+			fun des_encrypt_decrypt/0]}}.
 
 test_des_login_key_get() ->
 	Init = <<16#1b72fda24b4e538c4780cd4db6a4:112>>,
@@ -21,3 +22,16 @@ test_des_login_key_get() ->
 test_md5_crypt() ->
 	Password = <<"password">>,
 	{ok, <<"$1$abcdefgh$G//4keteveJp0qb8z2DxG/">>} = oscam:md5_crypt(Password).
+
+des_encrypt_decrypt() ->
+	Binary = <<"$1$abcdefgh$G//4keteveJp0qb8z2DxG/">>,
+	?debugVal(size(Binary)),
+	DesKey = <<136,56,246,34,81,200,127,0,117,176,166,100,167,114,136,0>>,
+	{ok, Encrypted} = oscam:des_encrypt(DesKey, Binary),
+	?debugVal(Encrypted),
+	ELength = size(Encrypted),
+	?debugVal(ELength),
+	{ok, Decrypted} = oscam:des_decrypt(DesKey, Encrypted),
+	?debugVal(Decrypted),
+	?debugVal(size(Decrypted)),
+	Decrypted = Binary.

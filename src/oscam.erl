@@ -6,7 +6,9 @@
 -export([
 	start_link/0,
 	des_login_key_get/2,
-	md5_crypt/1
+	md5_crypt/1,
+	des_encrypt/2,
+	des_decrypt/2
 ]).
 
 %% Tests
@@ -35,11 +37,21 @@
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-des_login_key_get(InitKey, NcdKey) ->
+-spec des_login_key_get(binary(), binary()) -> {ok, binary()}.
+des_login_key_get(InitKey = <<_:112>>, NcdKey = <<_:112>>) ->
     gen_server:call(?MODULE, {req, des_login_key_get, [InitKey, NcdKey]}).
 
-md5_crypt(Password) ->
+-spec md5_crypt(binary()) -> {ok, binary()}.
+md5_crypt(Password) when is_binary(Password) ->
 	gen_server:call(?MODULE, {req, md5_crypt, [Password]}).
+
+-spec des_encrypt(binary(), binary()) -> {ok, binary()}.
+des_encrypt(DesKey = <<_:128>>, Binary) when is_binary(Binary) ->
+	gen_server:call(?MODULE, {req, des_encrypt, [DesKey, Binary]}).
+
+-spec des_decrypt(binary(), binary()) -> {ok, binary()}.
+des_decrypt(DesKey = <<_:128>>, Binary) when is_binary(Binary) ->
+	gen_server:call(?MODULE, {req, des_decrypt, [DesKey, Binary]}).
 
 %% ===================================================================
 %% GenServer Function Definitions
@@ -82,7 +94,9 @@ terminate(_Reason, _State) ->
 %% ===================================================================
 
 pack_buff(des_login_key_get, [InitKey, NcdKey]) -> [1, InitKey, NcdKey];
-pack_buff(md5_crypt, [Pass]) -> [2, Pass, 0].
+pack_buff(md5_crypt, [Pass]) -> [2, Pass, 0];
+pack_buff(des_encrypt, [DesKey, Binary]) -> [3, DesKey, Binary];
+pack_buff(des_decrypt, [DesKey, Binary]) -> [4, DesKey, Binary].
 
 unpack_buff([Result]) -> Result;
 unpack_buff(AnyThing) -> AnyThing.
@@ -91,6 +105,7 @@ unpack_buff(AnyThing) -> AnyThing.
 %% Test
 %% ===================================================================
 
+-spec test() -> ignore.
 test() ->
 	test_des_login_key_get(),
 	test_md5_crypt().
