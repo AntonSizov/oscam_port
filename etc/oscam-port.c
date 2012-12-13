@@ -72,13 +72,13 @@ int main(void) {
     if (fn == IDX_DES_LOGIN_KEY_GET) {
       byte key[16];
 
-      des_login_key_get(&buf[1], &buf[15], 14, key);
+      des_login_key_get(buf+1, buf+15, 14, key);
 	  write_cmd(key, 16);
 
     } else if (fn == MD5_CRYPT) {
 	  byte passwdcrypt[120];
 
-      __md5_crypt((char *)&buf[1], "$1$abcdefgh$", (char *)passwdcrypt);
+      __md5_crypt((char *)buf+1, "$1$abcdefgh$", (char *)passwdcrypt);
 	  write_cmd(passwdcrypt, strlen((char *)passwdcrypt));
 
     } else if (fn == DES_ENCRYPT) {
@@ -86,8 +86,8 @@ int main(void) {
 	  int encrypted_len, msg_len;
 
 	  msg_len = len-17;
-	  memcpy(desbuf, &buf[18], msg_len);
-	  encrypted_len = des_encrypt(desbuf, msg_len , &buf[1]);
+	  memcpy(desbuf, buf+18, msg_len);
+	  encrypted_len = des_encrypt(desbuf, msg_len, buf+1);
 	  fprintf(stderr, "encrypted len: %d, input msg len: %d\n", encrypted_len, msg_len);
 	  write_cmd(desbuf, encrypted_len);
 
@@ -98,8 +98,8 @@ int main(void) {
 
 	  input_len = len-17;
 	  fprintf(stderr, "des_decrypt input len: %d\n", input_len);
-	  memcpy(desbuf, &buf[18], input_len);
-	  if ((decrypted_len = des_decrypt(desbuf, input_len, &buf[1])) < 0)
+	  memcpy(desbuf, buf+18, input_len);
+	  if ((decrypted_len = des_decrypt(desbuf, input_len, buf+1)) < 0)
 		fprintf(stderr, "des_decrypt error (%d)\n", decrypted_len);
 		return -1;
 	  fprintf(stderr, "decrypted len: %d, input len: %d\n", decrypted_len, input_len);
