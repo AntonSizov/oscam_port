@@ -86,9 +86,8 @@ int main(void) {
 	  int encrypted_len, msg_len;
 
 	  msg_len = len-17;
-	  memcpy(desbuf, buf+18, msg_len);
+	  memcpy(desbuf, buf+17, msg_len);
 	  encrypted_len = des_encrypt(desbuf, msg_len, buf+1);
-	  fprintf(stderr, "encrypted len: %d, input msg len: %d\n", encrypted_len, msg_len);
 	  write_cmd(desbuf, encrypted_len);
 
 	} else if (fn == DES_DECRYPT) {
@@ -97,12 +96,11 @@ int main(void) {
 	  int decrypted_len, input_len;
 
 	  input_len = len-17;
-	  fprintf(stderr, "des_decrypt input len: %d\n", input_len);
-	  memcpy(desbuf, buf+18, input_len);
-	  if ((decrypted_len = des_decrypt(desbuf, input_len, buf+1)) < 0)
+	  memcpy(desbuf, buf+17, input_len);
+	  if ((decrypted_len = des_decrypt(desbuf, input_len, buf+1)) < 0) {
 		fprintf(stderr, "des_decrypt error (%d)\n", decrypted_len);
 		return -1;
-	  fprintf(stderr, "decrypted len: %d, input len: %d\n", decrypted_len, input_len);
+	  }
 	  write_cmd(desbuf, decrypted_len);
 
 	}

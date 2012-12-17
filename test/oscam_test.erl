@@ -25,13 +25,7 @@ test_md5_crypt() ->
 
 des_encrypt_decrypt() ->
 	Binary = <<"$1$abcdefgh$G//4keteveJp0qb8z2DxG/">>,
-	?debugVal(size(Binary)),
+	BinarySize = size(Binary),
 	DesKey = <<136,56,246,34,81,200,127,0,117,176,166,100,167,114,136,0>>,
 	{ok, Encrypted} = oscam:des_encrypt(DesKey, Binary),
-	?debugVal(Encrypted),
-	ELength = size(Encrypted),
-	?debugVal(ELength),
-	{ok, Decrypted} = oscam:des_decrypt(DesKey, Encrypted),
-	?debugVal(Decrypted),
-	?debugVal(size(Decrypted)),
-	Decrypted = Binary.
+	{ok, <<Binary:BinarySize/binary, _Rest/binary>>} = oscam:des_decrypt(DesKey, Encrypted).

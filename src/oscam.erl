@@ -11,11 +11,6 @@
 	des_decrypt/2
 ]).
 
-%% Tests
--export([
-	test/0
-]).
-
 %% gen_server Function Exports
 -export([
 	init/1,
@@ -100,24 +95,3 @@ pack_buff(des_decrypt, [DesKey, Binary]) -> [4, DesKey, Binary].
 
 unpack_buff([Result]) -> Result;
 unpack_buff(AnyThing) -> AnyThing.
-
-%% ===================================================================
-%% Test
-%% ===================================================================
-
--spec test() -> ignore.
-test() ->
-	test_des_login_key_get(),
-	test_md5_crypt().
-
-test_des_login_key_get() ->
-	Init = <<16#1b72fda24b4e538c4780cd4db6a4:112>>,
-	Ncd = <<16#0102030405060708091011121314:112>>,
-	{ok, DesKey = <<136,56,246,34,81,200,127,0,117,176,166,100,167,114,136,0>>} =
-		des_login_key_get(Init,Ncd),
-	io:format("des_login_key_get OK. DesKeyGot: ~p~n", [DesKey]).
-
-test_md5_crypt() ->
-	Password = <<"password">>,
-	{ok, Passcrypt = <<"$1$abcdefgh$G//4keteveJp0qb8z2DxG/">>} = md5_crypt(Password),
-	io:format("test_md5_crypt OK. Passcrypt: ~p~n", [Passcrypt]).

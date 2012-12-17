@@ -3,7 +3,7 @@ OSCAM-REP=oscam-light
 OSCAM-BIN=$(OSCAM-REP)/Distribution/oscam-1.20-unstable_svn0-x86_64-linux-gnu
 OSCAM-PRIV="./priv/oscam"
 
-all: compile
+all: test
 
 compile: oscam get-deps
 	@./rebar compile
